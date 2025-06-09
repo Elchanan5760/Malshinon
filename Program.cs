@@ -1,5 +1,5 @@
 ﻿
-namespace SQLAgent
+namespace Malshinon
 {
     public class Program
     {
