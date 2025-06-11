@@ -115,7 +115,7 @@ namespace Malshinon.Dal
 
                 Console.WriteLine($"Error connecting to MySql dadabase: {ex}");
             }
-            return null;
+            return peopleRow;
         }
         public void UpdatePeopleValueInt(int id,string column,int value)
         {
