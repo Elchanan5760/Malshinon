@@ -15,17 +15,17 @@ namespace Malshinon.Dal
     public class PeopleDAL
     {
         DBConnction conn = new DBConnction();
-        public void AddRowPeople(PeopleRow peopleRow)
+        public PeopleRow AddRowPeople(PeopleRow peopleRow)
         {
             try
             {
                 //conn.GetConnect();
                 //Console.WriteLine(peopleRow.FirstName, peopleRow.LastName, peopleRow.SecretCode, peopleRow.Type);
                 MySqlCommand cmd = new MySqlCommand("INSERT INTO people (first_name,last_name,secret_code,type) VALUES (@FirstName,@LastName,@SecretCode,@Type)", conn.GetConnect());
-                cmd.Parameters.AddWithValue(@"FirstName", peopleRow.FirstName);
-                cmd.Parameters.AddWithValue(@"LastName", peopleRow.LastName);
-                cmd.Parameters.AddWithValue(@"SecretCode", peopleRow.SecretCode);
-                cmd.Parameters.AddWithValue(@"Type", peopleRow.Type);
+                cmd.Parameters.AddWithValue(@"FirstName", peopleRow.firstName);
+                cmd.Parameters.AddWithValue(@"LastName", peopleRow.lastName);
+                cmd.Parameters.AddWithValue(@"SecretCode", peopleRow.secretCode);
+                cmd.Parameters.AddWithValue(@"Type", peopleRow.type);
                 cmd.ExecuteReader();
                 conn.CloseConnect();
             }
@@ -34,6 +34,7 @@ namespace Malshinon.Dal
 
                 Console.WriteLine($"Error connecting to MySql dadabase: {ex}");
             }
+            return peopleRow;
         }
 
         public List<PeopleRow> GetAllPeople()
@@ -48,13 +49,8 @@ namespace Malshinon.Dal
                 while (reader.Read())
                 {
                     PeopleRow peopleRow = new PeopleRow();
-                    peopleRow.Id = reader.GetInt32("id");
-                    peopleRow.FirstName = reader.GetString("first_name");
-                    peopleRow.LastName = reader.GetString("last_name");
-                    peopleRow.SecretCode = reader.GetString("secret_code");
-                    peopleRow.Type = reader.GetString("type");
-                    peopleRow.NumReports = reader.GetInt32("num_reports");
-                    peopleRow.NumMentions = reader.GetInt32("num_mentions");
+                    peopleRow.ConstractorPerson(reader.GetString("first_name"), reader.GetString("last_name"), reader.GetString("secret_code"), reader.GetString("type"));
+                    peopleRow.ConstractorDefultValuesPerson(reader.GetInt32("id"), reader.GetInt32("num_reporters"), reader.GetInt32("num_mentions"));
                     peopleRows.Add(peopleRow);
                 }
                 conn.CloseConnect();
@@ -73,26 +69,53 @@ namespace Malshinon.Dal
             try
             {
                 var connect = conn.GetConnect();
-                MySqlCommand cmd = new MySqlCommand("SELECT * FROM people WHERE id = @secret_code;", connect);
-                cmd.Parameters.AddWithValue(@"id", secretCode);
+                MySqlCommand cmd = new MySqlCommand("SELECT * FROM people WHERE secret_code = @secret_code;", connect);
+                cmd.Parameters.AddWithValue(@"secret_code", secretCode);
                 var reader = cmd.ExecuteReader();
-                
-                peopleRow.Id = reader.GetInt32("id");
-                peopleRow.FirstName = reader.GetString("first_name");
-                peopleRow.LastName = reader.GetString("last_name");
-                peopleRow.SecretCode = reader.GetString("secret_code");
-                peopleRow.Type = reader.GetString("type");
-                peopleRow.NumReports = reader.GetInt32("num_reporters");
-                peopleRow.NumMentions = reader.GetInt32("num_mentions");
-                conn.CloseConnect();
-                
+
+                if (reader.Read()==true)
+                {
+                    
+                    
+                    peopleRow.ConstractorPerson(reader.GetString("first_name"), reader.GetString("last_name"), reader.GetString("secret_code"), reader.GetString("type"));
+                    peopleRow.ConstractorDefultValuesPerson(reader.GetInt32("id"), reader.GetInt32("num_reports"), reader.GetInt32("num_mentions"));
+                    conn.CloseConnect();
+                    return peopleRow;
+                }
             }
             catch (Exception ex)
             {
 
                 Console.WriteLine($"Error connecting to MySql dadabase: {ex}");
             }
-            return peopleRow;
+            return null;
+        }
+        public PeopleRow FindPeopleById(int id)
+        {
+            PeopleRow peopleRow = new PeopleRow();
+            try
+            {
+                var connect = conn.GetConnect();
+                MySqlCommand cmd = new MySqlCommand("SELECT * FROM people WHERE id = @id;", connect);
+                cmd.Parameters.AddWithValue(@"id", id);
+                var reader = cmd.ExecuteReader();
+
+                if (reader.Read() == true)
+                {
+
+
+                    peopleRow.ConstractorPerson(reader.GetString("first_name"), reader.GetString("last_name"), reader.GetString("secret_code"), reader.GetString("type"));
+                    peopleRow.ConstractorDefultValuesPerson(reader.GetInt32("id"), reader.GetInt32("num_reports"), reader.GetInt32("num_mentions"));
+                    conn.CloseConnect();
+                    return peopleRow;
+                }
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine($"Error connecting to MySql dadabase: {ex}");
+            }
+            return null;
         }
         public void UpdatePeopleValueInt(int id,string column,int value)
         {
@@ -100,7 +123,7 @@ namespace Malshinon.Dal
             {
                 DBConnction conn = new DBConnction();
                 conn.GetConnect();
-                MySqlCommand cmd = new MySqlCommand($"ALTER TABLE people SET @{column} = @value WHERE id = @id", conn.GetConnect());
+                MySqlCommand cmd = new MySqlCommand($"UPDATE people SET people.{column} = {value} WHERE id = {id};", conn.GetConnect());
                 cmd.Parameters.AddWithValue(@"id", id);
                 cmd.Parameters.AddWithValue(@"value", value);
                 var reader = cmd.ExecuteReader();

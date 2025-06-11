@@ -8,29 +8,31 @@ namespace Malshinon.models
 {
     public class PeopleRow
     {
+        public int id { get;private set; }
+        public string firstName { get; private set; }
 
-        public int Id { get; set; }
+        public string lastName { get; private set; }
 
-        public string FirstName { get; set; }
+        public string secretCode { get; private set; }
 
-        public string LastName { get; set; }
+        public string type { get; private set; }
 
-        public string SecretCode { get; set; }
+        public int numReports { get; private set; }
 
-        public string Type { get; set; }
+        public int numMentions { get; private set; }
 
-        public int NumReports { set; get; }
-
-        public int NumMentions { set; get; }
-
-        //public (string,string) GetTableNmaeAndValue()
-        //{
-        //    return ("people", firstName);
-        //}
-        //public (string, int) GetIdAndValue()
-        //{
-        //    return ("id", Id);
-        //}
-
+        public void ConstractorPerson(string firstName, string lastName, string secretCode, string type)
+        {
+            this.firstName = firstName;
+            this.lastName = lastName;
+            this.secretCode = secretCode;
+            this.type = type;
+        }
+        public void ConstractorDefultValuesPerson(int id,int numReporters, int numMentions)
+        {
+            this.id = id;
+            this.numReports = numReporters;
+            this.numReports = numReporters;
+        }
     }
 }
