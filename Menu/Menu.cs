@@ -1,6 +1,7 @@
 ﻿using Malshinon.Dal;
 using Malshinon.DAL;
 using Malshinon.models;
+using Org.BouncyCastle.Asn1.X509.SigI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,7 @@ namespace Malshinon.Menu
     public class Menu
     {
         PeopleDAL peopleDAL = new PeopleDAL();
+        IntelReportDAL intelReportDAL = new IntelReportDAL();
         public string GetSecretCode()
         {
             Console.WriteLine("Please enter your secret code:");
@@ -21,12 +23,17 @@ namespace Malshinon.Menu
         public void Navigation()
         {
             string secretCode = GetSecretCode();
-            if (peopleDAL.FindPeopleBySecretCode(secretCode) == null)
+            PeopleRow person = peopleDAL.FindPeopleBySecretCode(secretCode);
+            if (person == null)
             {
                 CreatNewPersonReporter(secretCode);
             }
             else
             {
+                if (person.type == "target")
+                {
+                    peopleDAL.UpdatePeopleValueString(person.id, "type", "both");
+                }
                 EnterText(peopleDAL.FindPeopleBySecretCode(secretCode));
             }
         }
@@ -37,8 +44,6 @@ namespace Malshinon.Menu
             string firstName = Console.ReadLine();
             Console.WriteLine("Please enter your last name");
             string lastName = Console.ReadLine();
-
-
             string type = "reporter";
             PeopleRow peopleRow = new PeopleRow();
             peopleRow.ConstractorPerson(firstName,lastName,secretCode,type);
@@ -48,7 +53,11 @@ namespace Malshinon.Menu
             peopleRow.ConstractorDefultValuesPerson(achieveTheDefultValues.id, achieveTheDefultValues.numReports, achieveTheDefultValues.numMentions);
             EnterText(peopleRow);
         }
-        public PeopleRow CreatNewPersonTarget(int id)
+        public void ChangeType(string type)
+        {
+            
+        }
+        public PeopleRow CreatNewPersonTarget(string secretCode)
         {
 
             Console.WriteLine("Please enter his first name");
@@ -56,9 +65,9 @@ namespace Malshinon.Menu
             Console.WriteLine("Please enter his last name");
             string lastName = Console.ReadLine();
             PeopleRow peopleRow = new PeopleRow();
-            peopleRow.ConstractorPerson(firstName, lastName,null , "target");
+            peopleRow.ConstractorPerson(firstName, lastName,secretCode , "target");
             PeopleRow people = peopleDAL.AddRowPeople(peopleRow);
-            PeopleRow achieveTheDefultValues = peopleDAL.FindPeopleById(id);
+            PeopleRow achieveTheDefultValues = peopleDAL.FindPeopleBySecretCode(secretCode);
             people.ConstractorDefultValuesPerson(achieveTheDefultValues.id,achieveTheDefultValues.numReports,achieveTheDefultValues.numMentions);
             Console.WriteLine($"New person target Named {firstName} {lastName} created!");
             return people;
@@ -70,70 +79,49 @@ namespace Malshinon.Menu
         public void EnterText(PeopleRow person)
         {
             IntelReportRow intelReportRow = new IntelReportRow();
-            IntelReportDAL intelReportDAL = new IntelReportDAL();
-            int intTargetId = 0;
-            bool cond = true;
-            do
+            
+            Console.WriteLine("Please enter his secret code:");
+            string secretCode = Console.ReadLine();
+            Console.WriteLine("What do you want to report:");
+            string text = Console.ReadLine();
+            PeopleRow targetPerson = new PeopleRow();
+            if (peopleDAL.FindPeopleBySecretCode(secretCode)== null)
             {
-                Console.WriteLine("What is an id of who do you want to report about");
-                string targetId = Console.ReadLine();
-                
-                foreach (char c in targetId)
-                {
-                    if (!char.IsDigit(c))
-                    {
-                        cond = false;
-                    }
-                    else
-                    {
-                        cond = true;
-                    }
-                }
-                if (cond)
-                {
-                    intTargetId = Convert.ToInt32(targetId);
-                }
-                else
-                {
-                    Console.WriteLine("It needs to be only numbers please try again");
-                }
-            }
-            while (!cond);
-            Console.WriteLine("please enter your report");
-            string report = Console.ReadLine();
-           
-            IntelReportRow intel = new IntelReportRow();
-            intel.ConstractorReport(person.id,intTargetId,report);
-            if (peopleDAL.FindPeopleById(intTargetId) == null)
-            {
-                var targetPerson = CreatNewPersonTarget(intTargetId);
-                
-                intelReportRow.ConstractorReport(person.id, targetPerson.id, report);
-                peopleDAL.UpdatePeopleValueInt(targetPerson.id, "num_mentions", person.numMentions + 1);
-                peopleDAL.UpdatePeopleValueInt(person.id, "num_reports", person.numReports + 1);
-                if (person.type == "target")
-                {
-                    peopleDAL.UpdatePeopleValueString(person.id, "type", "both");
-                }
-                
-                intelReportDAL.AddRowReports(intelReportRow);
+                 targetPerson = CreatNewPersonTarget(secretCode);
             }
             else
             {
-                var targetPerson = peopleDAL.FindPeopleById(intTargetId);
-                intelReportRow.ConstractorReport(person.id, intTargetId, report);
-                peopleDAL.UpdatePeopleValueInt(targetPerson.id, "num_mentions", person.numMentions + 1);
-                peopleDAL.UpdatePeopleValueInt(person.id, "num_reports", person.numReports + 1);
-                if (person.type == "reporter")
+
+                targetPerson = peopleDAL.FindPeopleBySecretCode(secretCode);
+                if (targetPerson.type == "repoter")
                 {
                     peopleDAL.UpdatePeopleValueString(person.id, "type", "both");
                 }
-                else if (targetPerson.type == "target")
+            }
+            peopleDAL.UpdatePeopleValueInt(targetPerson.id, "num_mentions", targetPerson.numMentions + 1);
+            peopleDAL.UpdatePeopleValueInt(person.id, "num_reports", person.numReports + 1);
+            intelReportRow.ConstractorReport(person.id,targetPerson.id,text);
+            intelReportDAL.AddRowReports(intelReportRow);
+            if (targetPerson.numMentions >= 20)
+            {
+                Console.WriteLine($"{targetPerson.firstName} {targetPerson.lastName} can be dangerius!");
+            }
+            List<IntelReportRow> allReports = intelReportDAL.GetAllReports();
+            int caont = 0;
+            int sum = 0;
+            foreach(IntelReportRow report in allReports)
+            {
+                sum += report.text.Length;
+                caont++;
+            }
+            if (caont != 0)
+            {
+                if (person.numReports >= 10 && sum / caont >= 100)
                 {
-                    peopleDAL.UpdatePeopleValueString(targetPerson.id, "type", "both");
+                    peopleDAL.UpdatePeopleValueString(person.id, "type", "potential_agent");
                 }
-                intelReportDAL.AddRowReports(intelReportRow);
             }
         }
+        
     }
 }

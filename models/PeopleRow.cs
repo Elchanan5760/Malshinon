@@ -32,7 +32,7 @@ namespace Malshinon.models
         {
             this.id = id;
             this.numReports = numReporters;
-            this.numReports = numReporters;
+            this.numMentions = numMentions;
         }
     }
 }
