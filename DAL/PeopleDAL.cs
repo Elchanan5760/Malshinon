@@ -119,9 +119,9 @@ namespace Malshinon.Dal
         }
         public void UpdatePeopleValueInt(int id,string column,int value)
         {
+            DBConnction conn = new DBConnction();
             try
             {
-                DBConnction conn = new DBConnction();
                 conn.GetConnect();
                 MySqlCommand cmd = new MySqlCommand($"UPDATE people SET people.{column} = {value} WHERE id = {id};", conn.GetConnect());
                 cmd.Parameters.AddWithValue(@"id", id);
@@ -139,8 +139,8 @@ namespace Malshinon.Dal
         {
             try
             {
-                
-                
+
+                DBConnction conn = new DBConnction();
                 MySqlCommand cmd = new MySqlCommand($"UPDATE people SET people.{column} = @value WHERE id = {id};", conn.GetConnect());
                 cmd.Parameters.AddWithValue(@"id", id);
                 cmd.Parameters.AddWithValue(@"value",value);
