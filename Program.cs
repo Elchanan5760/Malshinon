@@ -8,17 +8,8 @@ namespace Malshinon
     {
         static public void Main(string[] args)
         {
-            Menu.Menu peopleMenu = new Menu.Menu();
-            peopleMenu.Navigation();
-            //PeopleDAL peopleDAL = new PeopleDAL();
-            //PeopleRow targetPerson = peopleDAL.FindPeopleBySecretCode("12345678");
-            //Console.WriteLine(targetPerson.type);
-            //PeopleDAL peopleDAL = new PeopleDAL();
-            //peopleDAL.UpdatePeopleValueString(2, "type", "both");
-            //IntelReportRow intelReportRow = new IntelReportRow();
-            //intelReportRow.ConstractorReport(2, 3, "5trtje");
-            //IntelReportDAL intelReportDAL = new IntelReportDAL();
-            //intelReportDAL.AddRowReports(intelReportRow);
+            MainMenu mainMenu = new MainMenu();
+            mainMenu.ChooseMenu();
         }
     }
 }

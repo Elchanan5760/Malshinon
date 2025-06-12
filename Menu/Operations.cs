@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Malshinon.Menu
 {
-    public class Menu
+    public class Operations
     {
         PeopleDAL peopleDAL = new PeopleDAL();
         IntelReportDAL intelReportDAL = new IntelReportDAL();
@@ -33,6 +33,7 @@ namespace Malshinon.Menu
                 if (person.type == "target")
                 {
                     peopleDAL.UpdatePeopleValueString(person.id, "type", "both");
+                    Console.WriteLine($"{person.firstName} {person.lastName} is {person.type}");
                 }
                 EnterText(peopleDAL.FindPeopleBySecretCode(secretCode));
             }
@@ -97,6 +98,7 @@ namespace Malshinon.Menu
                 if (targetPerson.type == "reporter")
                 {
                     peopleDAL.UpdatePeopleValueString(targetPerson.id, "type", "both");
+                    Console.WriteLine($"{targetPerson.firstName} {targetPerson.lastName} is {targetPerson.type}");
                 }
             }
             
@@ -118,9 +120,10 @@ namespace Malshinon.Menu
             }
             if (caont != 0)
             {
-                if (person.numReports >= 10) //&& sum / caont >= 100)
+                if (person.numReports >= 10 && sum / caont >= 100)
                 {
                     peopleDAL.UpdatePeopleValueString(person.id, "type", "potential_agent");
+                    Console.WriteLine($"{person.firstName} {person.lastName} is {person.type}");
                 }
             }
         }
